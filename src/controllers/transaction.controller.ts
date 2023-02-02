@@ -16,45 +16,42 @@ export class TransactionController {
       let result;
       let income, outcome, total;
 
-      // //   tratamento para caso não for encontrado usuário
-      // if (user === undefined) {
-      //   return RequestError.dataNotFound(res, "User");
-      // }
-
       result = user?.transactionsList();
 
-      if (title && result) {
-        result.transactions = result.transactions?.filter((transaction) => {
-          return transaction.title === title;
-        });
-      }
-
-      if (type && result) {
-        result.transactions = result.transactions?.filter((transaction) => {
-          return transaction.type === type;
-        });
-      }
-
-      income = result?.transactions
-        ?.filter((transaction) => transaction.type == "income")
-        .reduce((prev, transaction) => {
-          return prev + transaction.value;
-        }, 0);
-
-      outcome = result?.transactions
-        ?.filter((transaction) => transaction.type == "outcome")
-        .reduce((prev, transaction) => {
-          return prev + transaction.value;
-        }, 0);
-
-      total = (income ?? 0) - (outcome ?? 0);
-
       if (result) {
-        result.balance = {
-          income,
-          outcome,
-          total,
-        };
+        if (title) {
+          result.transactions = result.transactions?.filter((transaction) => {
+            return transaction.title === title;
+          });
+        }
+
+        if (type) {
+          result.transactions = result.transactions?.filter((transaction) => {
+            return transaction.type === type;
+          });
+        }
+
+        income = result?.transactions
+          ?.filter((transaction) => transaction.type == "income")
+          .reduce((prev, transaction) => {
+            return prev + transaction.value;
+          }, 0);
+
+        outcome = result?.transactions
+          ?.filter((transaction) => transaction.type == "outcome")
+          .reduce((prev, transaction) => {
+            return prev + transaction.value;
+          }, 0);
+
+        total = (income ?? 0) - (outcome ?? 0);
+
+        if (result) {
+          result.balance = {
+            income,
+            outcome,
+            total,
+          };
+        }
       }
 
       res.status(200).send({
