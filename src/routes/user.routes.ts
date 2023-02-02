@@ -1,7 +1,9 @@
 import { Router } from "express";
+import { TransactionController } from "../controllers/transaction.controller";
 import { UserController } from "../controllers/user.controller";
 import { ServerError } from "../messages/error/server.error";
 import { CpfValidatorMiddleware } from "../middleware/cpf-validator.middleware";
+import { TransactionValidatorMiddleware } from "../middleware/transaction-validator.middleware";
 import { UserValidatorMiddleware } from "../middleware/user-validator.middleware";
 
 const middlewareForCpf = [
@@ -9,10 +11,14 @@ const middlewareForCpf = [
   CpfValidatorMiddleware.cpfAlreadyExists,
 ];
 
-const middlewareForCreate = [
+const middlewareForCreateUser = [
   CpfValidatorMiddleware.cpfValidMiddleware,
   CpfValidatorMiddleware.cpfAlreadyExists,
   UserValidatorMiddleware.validateMandatoryMiddleware,
+];
+
+const middlewareForCreateTransaction = [
+  TransactionValidatorMiddleware.validateMandatoryMiddleware,
 ];
 
 // http://localhost:3333/user
@@ -26,7 +32,7 @@ export const userRoutes = () => {
   app.get("/:userId", new UserController().get);
 
   // POST http://localhost:3333/user/
-  app.post("/", middlewareForCreate, new UserController().create);
+  app.post("/", middlewareForCreateUser, new UserController().create);
 
   // PUT http://localhost:3333/user/:id
   app.put(
@@ -37,6 +43,27 @@ export const userRoutes = () => {
 
   // DELETE http://localhost:3333/user/:id
   app.delete("/:userId", new UserController().delete);
+
+  // ****************
+
+  // GET http://localhost:3333/user/:userId/transactions
+  app.get("/:userId/transactions", new TransactionController().list);
+
+  // GET http://localhost:3333/user/:userId/transactions/:id
+  app.get("/:userId/transactions/:id", new TransactionController().get);
+
+  // POST http://localhost:3333/user/:userId/transactions/:id
+  app.post(
+    "/:userId/transactions",
+    middlewareForCreateTransaction,
+    new TransactionController().create
+  );
+
+  // PUT http://localhost:3333/user/:userId/transactions/:id
+  app.put("/:userId/transactions/:id", new TransactionController().update);
+
+  // DELETE http://localhost:3333/user/:userId/transactions/:id
+  app.delete("/:userId/transactions/:id", new TransactionController().delete);
 
   app.all("/*", (_, res) => {
     return ServerError.genericError(res, "Rota inválida");

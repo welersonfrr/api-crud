@@ -12,6 +12,9 @@ export const transactionRoutes = () => {
   // GET http://localhost:3333/user/:userId/transactions/:id
   app.get("/:id", new TransactionController().get);
 
+  // POST http://localhost:3333/user/:userId/transactions/:id
+  app.post("/", new TransactionController().create);
+
   // PUT http://localhost:3333/user/:userId/transactions/:id
   app.put("/:id", new TransactionController().update);
 

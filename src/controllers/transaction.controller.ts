@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import { UserDatabase } from "../database/user.database";
 import { RequestError } from "../messages/error/request.error";
+import { RequestSuccess } from "../messages/success/request.success";
 import { ServerError } from "../messages/error/server.error";
+import { Transaction } from "../models/transaction.model";
 
 export class TransactionController {
   // list all transaction of a user
@@ -89,6 +91,30 @@ export class TransactionController {
         msg: "Showing Transaction",
         data: result,
       });
+    } catch (err) {
+      return ServerError.genericError(res, err);
+    }
+  }
+
+  // Create an transaction
+  public create(req: Request, res: Response) {
+    const { userId } = req.params;
+    const { title, value, type } = req.body;
+    const db = new UserDatabase();
+    const user = db.get(userId);
+    let data;
+
+    //   tratamento para caso não for encontrado usuário
+    if (user === undefined) {
+      return RequestError.dataNotFound(res, "User");
+    }
+
+    data = new Transaction(title, value, type);
+    user.transactions.push(data);
+
+    RequestSuccess.dataCreated(res, "Transaction", data);
+
+    try {
     } catch (err) {
       return ServerError.genericError(res, err);
     }
