@@ -45,11 +45,6 @@ export class UserController {
       const user = database.get(userId);
       let result;
 
-      //   tratamento para caso não for encontrado usuário
-      if (user === undefined) {
-        return RequestError.dataNotFound(res, "User");
-      }
-
       //   se encontra usuário converte para json
       if (user) {
         result = user.toJson();

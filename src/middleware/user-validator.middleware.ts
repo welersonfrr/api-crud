@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { UserDatabase } from "../database/user.database";
 import { RequestError } from "../messages/error/request.error";
 import { ServerError } from "../messages/error/server.error";
 
@@ -26,6 +27,26 @@ export class UserValidatorMiddleware {
 
       next();
     } catch (err: any) {
+      return ServerError.genericError(res, err);
+    }
+  }
+
+  public static validateUserExistance(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { userId } = req.params;
+    const db = new UserDatabase();
+    const user = db.get(userId);
+
+    try {
+      if (user === undefined) {
+        return RequestError.dataNotFound(res, "User");
+      }
+
+      next();
+    } catch (err) {
       return ServerError.genericError(res, err);
     }
   }

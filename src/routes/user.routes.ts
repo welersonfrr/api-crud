@@ -18,7 +18,12 @@ const middlewareForCreateUser = [
 ];
 
 const middlewareForCreateTransaction = [
+  UserValidatorMiddleware.validateUserExistance,
   TransactionValidatorMiddleware.validateMandatoryMiddleware,
+];
+
+const middlewareForValidateUserId = [
+  UserValidatorMiddleware.validateUserExistance,
 ];
 
 // http://localhost:3333/user
@@ -29,7 +34,7 @@ export const userRoutes = () => {
   app.get("/", new UserController().list);
 
   // GET http://localhost:3333/user/:id
-  app.get("/:userId", new UserController().get);
+  app.get("/:userId", middlewareForValidateUserId, new UserController().get);
 
   // POST http://localhost:3333/user/
   app.post("/", middlewareForCreateUser, new UserController().create);
@@ -37,33 +42,57 @@ export const userRoutes = () => {
   // PUT http://localhost:3333/user/:id
   app.put(
     "/:userId",
-    [CpfValidatorMiddleware.cpfValidMiddleware],
+    [
+      UserValidatorMiddleware.validateUserExistance,
+      CpfValidatorMiddleware.cpfValidMiddleware,
+    ],
     new UserController().update
   );
 
   // DELETE http://localhost:3333/user/:id
-  app.delete("/:userId", new UserController().delete);
+  app.delete(
+    "/:userId",
+    middlewareForValidateUserId,
+    new UserController().delete
+  );
 
   // ****************
 
   // GET http://localhost:3333/user/:userId/transactions
-  app.get("/:userId/transactions", new TransactionController().list);
+  app.get(
+    "/:userId/transactions",
+    middlewareForValidateUserId,
+    new TransactionController().list
+  );
 
   // GET http://localhost:3333/user/:userId/transactions/:id
-  app.get("/:userId/transactions/:id", new TransactionController().get);
+  app.get(
+    "/:userId/transactions/:id",
+    middlewareForValidateUserId,
+    new TransactionController().get
+  );
 
   // POST http://localhost:3333/user/:userId/transactions/:id
   app.post(
     "/:userId/transactions",
+    middlewareForValidateUserId,
     middlewareForCreateTransaction,
     new TransactionController().create
   );
 
   // PUT http://localhost:3333/user/:userId/transactions/:id
-  app.put("/:userId/transactions/:id", new TransactionController().update);
+  app.put(
+    "/:userId/transactions/:id",
+    middlewareForValidateUserId,
+    new TransactionController().update
+  );
 
   // DELETE http://localhost:3333/user/:userId/transactions/:id
-  app.delete("/:userId/transactions/:id", new TransactionController().delete);
+  app.delete(
+    "/:userId/transactions/:id",
+    middlewareForValidateUserId,
+    new TransactionController().delete
+  );
 
   app.all("/*", (_, res) => {
     return ServerError.genericError(res, "Rota inválida");

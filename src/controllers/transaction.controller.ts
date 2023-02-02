@@ -16,32 +16,32 @@ export class TransactionController {
       let result;
       let income, outcome, total;
 
-      //   tratamento para caso não for encontrado usuário
-      if (user === undefined) {
-        return RequestError.dataNotFound(res, "User");
-      }
+      // //   tratamento para caso não for encontrado usuário
+      // if (user === undefined) {
+      //   return RequestError.dataNotFound(res, "User");
+      // }
 
-      result = user.transactionsList();
+      result = user?.transactionsList();
 
-      if (title) {
+      if (title && result) {
         result.transactions = result.transactions?.filter((transaction) => {
           return transaction.title === title;
         });
       }
 
-      if (type) {
+      if (type && result) {
         result.transactions = result.transactions?.filter((transaction) => {
           return transaction.type === type;
         });
       }
 
-      income = result.transactions
+      income = result?.transactions
         ?.filter((transaction) => transaction.type == "income")
         .reduce((prev, transaction) => {
           return prev + transaction.value;
         }, 0);
 
-      outcome = result.transactions
+      outcome = result?.transactions
         ?.filter((transaction) => transaction.type == "outcome")
         .reduce((prev, transaction) => {
           return prev + transaction.value;
@@ -49,11 +49,13 @@ export class TransactionController {
 
       total = (income ?? 0) - (outcome ?? 0);
 
-      result.balance = {
-        income,
-        outcome,
-        total,
-      };
+      if (result) {
+        result.balance = {
+          income,
+          outcome,
+          total,
+        };
+      }
 
       res.status(200).send({
         ok: true,
@@ -73,13 +75,13 @@ export class TransactionController {
       const user = db.get(userId);
       let result;
 
-      //   tratamento para caso não for encontrado usuário
-      if (user === undefined) {
-        return RequestError.dataNotFound(res, "User");
-      }
+      // //   tratamento para caso não for encontrado usuário
+      // if (user === undefined) {
+      //   return RequestError.dataNotFound(res, "User");
+      // }
 
       result = user
-        .transactionsList()
+        ?.transactionsList()
         .transactions?.find((transaction) => transaction.id === id);
 
       if (!result) {
@@ -104,13 +106,8 @@ export class TransactionController {
     const user = db.get(userId);
     let data;
 
-    //   tratamento para caso não for encontrado usuário
-    if (user === undefined) {
-      return RequestError.dataNotFound(res, "User");
-    }
-
     data = new Transaction(title, value, type);
-    user.transactions.push(data);
+    user?.transactions.push(data);
 
     RequestSuccess.dataCreated(res, "Transaction", data);
 
@@ -130,14 +127,11 @@ export class TransactionController {
       const user = db.get(userId);
       let result;
 
-      //   tratamento para caso não for encontrado usuário
-      if (user === undefined) {
-        return RequestError.dataNotFound(res, "User");
-      }
-
       result = user
-        .transactionsList()
-        .transactions?.find((transaction) => transaction.id === id);
+        ?.transactionsList()
+        .transactions?.find(
+          (transaction: Transaction) => transaction.id === id
+        );
 
       if (!result) {
         return RequestError.dataNotFound(res, "Transaction");
